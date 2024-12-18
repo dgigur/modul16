@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Path, status, Body, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-from typing import List
+from typing import List, Annotated
 from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
@@ -31,8 +31,13 @@ async def list_of_users(request: Request, user_id: int) -> HTMLResponse:
 
 @app.post('/user/{username}/{age}')
 async def users_reg(user: User,
-                    username: str = Path(min_length=3, max_length=20, description="Enter username", example='kolobok'),
-                    age: int = Path(ge=18, description="Enter age", example=33)) -> User:
+                    username: Annotated[str, Path(min_length=3,
+                                                  max_length=20,
+                                                  description="Enter username",
+                                                  example='kolobok')],
+                    age: Annotated[int, Path(ge=18,
+                                             description="Enter age",
+                                             example=33)]) -> User:
     if len(users) == 0:
         user.id = 1
     else:
@@ -44,11 +49,16 @@ async def users_reg(user: User,
 
 
 @app.put('/user/{user_id}/{username}/{age}')
-async def users_update(user=Body(),
-                       user_id: int = Path(gt=0, description='Enter id', example=2),
-                       username: str = Path(min_length=3, max_length=20, description="Enter username",
-                                            example='kolobok'),
-                       age: int = Path(ge=18, description="Enter age", example=33)) -> User:
+async def users_update(user_id: Annotated[int, Path(gt=0,
+                                                    description='Enter id',
+                                                    example=2)],
+                       username: Annotated[str, Path(min_length=3,
+                                                     max_length=20,
+                                                     description="Enter username",
+                                                     example='kolobok')],
+                       age: Annotated[int, Path(ge=18,
+                                                description="Enter age",
+                                                example=33)]) -> User:
     for i in users:
         if i.id == user_id:
             i.username = username
@@ -58,7 +68,9 @@ async def users_update(user=Body(),
 
 
 @app.delete('/user/{user_id}')
-async def users_del(user_id: int = Path(gt=0, description='Enter id', example=2)) -> User:
+async def users_del(user_id: Annotated[int, Path(gt=0,
+                                                 description='Enter id',
+                                                 example=2)]) -> User:
     for i in users:
         if i.id == user_id:
             users.remove(i)
